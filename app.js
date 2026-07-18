@@ -1,9 +1,8 @@
 // ===================================================
 // CONFIGURAÇÃO DA API
-// Quando o frontend for servido pelo FastAPI (Dia 3), a API está
-// no mesmo servidor — usamos uma URL relativa ou o endereço completo.
+// Atualizado com a URL pública do backend no Render
 // ===================================================
-const API_BASE_URL = "";
+const API_BASE_URL = "https://imers-o-arquitetura-web-com-ia-1.onrender.com";
 
 // ===================================================
 // FUNÇÃO: Preenche os slots do álbum com imagens da API
@@ -22,7 +21,7 @@ async function preencherFigurinhas() {
         const figurinhas = await response.json();
 
         // 3. Cria um Map de id → figurinha para lookup rápido
-        //    Ex: 1 → { id: 1, nome: "Alan Turing", imagem_url: "/imgs/01-alan-turing.jpg" }
+        //    Ex: 1 → { id: 1, nome: "Alan Turing", imagem_url: "/figurinhas/1/imagem" }
         const porId = new Map(figurinhas.map(f => [f.id, f]));
 
         // 4. Percorre todos os slots do HTML
@@ -55,7 +54,6 @@ async function preencherFigurinhas() {
 
     } catch (erro) {
         console.warn("⚠️  Não foi possível conectar à API do backend:", erro.message);
-        console.info("ℹ️  Inicie o servidor: cd backend/dia-3 && uvicorn main:app --reload");
     }
 }
 
@@ -203,8 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Show book after successful initialization
         bookElement.style.display = "block";
 
-        // Dia 3: Busca as figurinhas da API e preenche o álbum
-        // A função é async, chamamos sem await para não bloquear a inicialização do álbum
+        // Busca as figurinhas da API e preenche o álbum
         preencherFigurinhas();
 
     } catch (error) {
@@ -229,10 +226,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Synthesize white noise with a custom page-flip volume envelope
             for (let i = 0; i < bufferSize; i++) {
                 const progress = i / bufferSize;
-                // Noise value between -1 and 1
                 const noise = Math.random() * 2 - 1;
 
-                // Volume envelope: smooth curve that peaks around 30% of the duration
                 let envelope = 0;
                 if (progress < 0.3) {
                     envelope = progress / 0.3; // Rapid ramp up
@@ -240,31 +235,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     envelope = (1 - progress) / 0.7; // Smooth decay
                 }
 
-                // Add minor irregular spikes to simulate paper friction/crackle
                 const paperCrackle = Math.random() > 0.985 ? (Math.random() * 2 - 1) * 0.35 : 0;
 
                 data[i] = (noise * 0.65 + paperCrackle) * envelope * 0.12;
             }
 
-            // Create nodes
             const noiseNode = audioCtx.createBufferSource();
             noiseNode.buffer = buffer;
 
-            // Bandpass filter to extract the "whoosh" sound of paper shuffling
             const bandpassFilter = audioCtx.createBiquadFilter();
             bandpassFilter.type = "bandpass";
             bandpassFilter.Q.value = 2.0;
 
-            // Dynamic frequency sweep: starts at 1500Hz, sweeps down to 350Hz (sound of page moving away)
             bandpassFilter.frequency.setValueAtTime(1500, audioCtx.currentTime);
             bandpassFilter.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + duration);
 
-            // Lowpass filter to remove harsh high-frequency digital artifacts
             const lowpassFilter = audioCtx.createBiquadFilter();
             lowpassFilter.type = "lowpass";
             lowpassFilter.frequency.setValueAtTime(3800, audioCtx.currentTime);
 
-            // Connect graph: Source -> Bandpass -> Lowpass -> Destination
             noiseNode.connect(bandpassFilter);
             bandpassFilter.connect(lowpassFilter);
             lowpassFilter.connect(audioCtx.destination);
@@ -282,33 +271,29 @@ document.addEventListener("DOMContentLoaded", () => {
             iconOn.classList.add("hidden");
             iconOff.classList.remove("hidden");
         } else {
-            iconOn.classList.remove("hidden");
-            iconOff.classList.add("hidden");
+            iconOn.classList.add("hidden");
+            iconOff.classList.remove("hidden");
         }
     });
 
     // 4. Navigation controls and events
     if (pageFlip) {
-        // Play turn sound when page starts flipping
         pageFlip.on("changeState", (e) => {
             if (e.data === "flipping") {
                 playPaperTurnSound();
             }
         });
 
-        // Discrete arrow toggle depending on current page
         pageFlip.on("flip", (e) => {
             const currentPage = e.data;
             const totalPages = pageFlip.getPageCount();
 
-            // Hide left button on cover page
             if (currentPage === 0) {
                 btnPrev.classList.add("hidden");
             } else {
                 btnPrev.classList.remove("hidden");
             }
 
-            // Hide right button on back cover
             if (currentPage === totalPages - 1) {
                 btnNext.classList.add("hidden");
             } else {
@@ -316,7 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Click events for navigational arrows
         btnPrev.addEventListener("click", () => {
             pageFlip.flipPrev();
         });
@@ -325,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
             pageFlip.flipNext();
         });
 
-        // Keyboard events for navigational arrows
         document.addEventListener("keydown", (e) => {
             if (e.key === "ArrowLeft") {
                 pageFlip.flipPrev();
@@ -334,7 +317,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Hide left button initially since start page is 0
         btnPrev.classList.add("hidden");
     }
 });
